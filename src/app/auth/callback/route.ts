@@ -8,7 +8,22 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.exchangeCodeForSession(code);
+
+    // Check if user has organization
+    const { data: authUser } = await supabase.auth.getUser();
+    if (authUser.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', authUser.user.id)
+        .maybeSingle();
+
+      // If no organization, go to onboarding
+      if (!profile?.organization_id) {
+        return NextResponse.redirect(new URL('/onboarding', request.url));
+      }
+    }
   }
 
-  return NextResponse.redirect(new URL('/dashboard', request.url));
+  return NextResponse.redirect(new URL('/', request.url));
 }

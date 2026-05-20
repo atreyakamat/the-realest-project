@@ -103,3 +103,35 @@ export async function sharePropertyWithLeadAction(_prevState: { message: string;
     return { message: '', error: error instanceof Error ? error.message : 'Unable to share property.' };
   }
 }
+
+export async function scheduleSiteVisitAction(_prevState: { message: string; error: string }, formData: FormData) {
+  const user = await requireSessionUser();
+  const leadId = String(formData.get('leadId') ?? '');
+  const visitDate = String(formData.get('visitDate') ?? '');
+  const notes = String(formData.get('notes') ?? '');
+
+  if (!leadId || !visitDate) {
+    return { message: '', error: 'Lead ID and Visit Date are required.' };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  
+  // Create an activity for the site visit
+  const { error } = await supabase.from('activities').insert({
+    organization_id: user.organizationId,
+    lead_id: leadId,
+    actor_id: user.id,
+    type: 'site_visit_scheduled',
+    payload: { visitDate, notes, message: `Site visit scheduled for ${new Date(visitDate).toLocaleString()}` },
+  });
+
+  if (error) {
+    return { message: '', error: error.message };
+  }
+
+  // Update lead status
+  await supabase.from('leads').update({ status: 'Site Visit Scheduled' }).eq('id', leadId);
+
+  revalidatePath(`/leads/${leadId}`);
+  return { message: 'Site visit scheduled.', error: '' };
+}

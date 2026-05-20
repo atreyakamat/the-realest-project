@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { PerformanceChart } from "@/components/dashboard/performance-chart";
 
 export default async function DashboardPage() {
   const orgId = null; // In real app, get from auth session
@@ -66,6 +67,8 @@ export default async function DashboardPage() {
           bg="bg-red-400/10"
         />
       </div>
+
+      <PerformanceChart />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="flex items-center gap-4 py-4">

@@ -1,24 +1,16 @@
-import { getDashboardMetrics } from "@/lib/data";
-import { Card } from "@/components/ui";
-import { 
-  Users, 
-  Phone, 
-  Calendar, 
-  Flame, 
-  MapPin, 
-  Warehouse, 
-  UserCheck, 
-  Activity,
-  Plus,
-  Search
-} from "lucide-react";
-import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
-import { PerformanceChart } from "@/components/dashboard/performance-chart";
+import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
+import { Activity, Calendar, Flame, MapPin, Phone, Plus, Search, UserCheck, Users, Warehouse } from 'lucide-react';
+import { Card, Badge } from '@/components/ui';
+import { PerformanceChart } from '@/components/dashboard/performance-chart';
+import { getDashboardMetrics, getLeads, getProperties } from '@/lib/data';
+import { getWorkflowQueue } from '@/lib/workflow';
 
 export default async function DashboardPage() {
-  const orgId = null; // In real app, get from auth session
+  const orgId = null;
   const stats = await getDashboardMetrics(orgId);
+  const [leads, properties] = await Promise.all([getLeads(orgId), getProperties(orgId)]);
+  const queue = getWorkflowQueue(leads, properties, 3);
 
   return (
     <div className="space-y-6">
@@ -38,35 +30,51 @@ export default async function DashboardPage() {
       </header>
 
       <div className="grid grid-cols-2 gap-4">
-        <StatCard 
-          label="New Leads" 
-          value={stats.newLeadsToday} 
-          icon={Users} 
-          color="text-blue-400" 
-          bg="bg-blue-400/10"
-        />
-        <StatCard 
-          label="Calls Made" 
-          value={stats.callsToday} 
-          icon={Phone} 
-          color="text-emerald-400" 
-          bg="bg-emerald-400/10"
-        />
-        <StatCard 
-          label="Follow-ups" 
-          value={stats.followUpsDueToday} 
-          icon={Calendar} 
-          color="text-orange-400" 
-          bg="bg-orange-400/10"
-        />
-        <StatCard 
-          label="Hot Leads" 
-          value={stats.hotLeads} 
-          icon={Flame} 
-          color="text-red-400" 
-          bg="bg-red-400/10"
-        />
+        <StatCard label="New Leads" value={stats.newLeadsToday} icon={Users} color="text-blue-400" bg="bg-blue-400/10" />
+        <StatCard label="Calls Made" value={stats.callsToday} icon={Phone} color="text-emerald-400" bg="bg-emerald-400/10" />
+        <StatCard label="Follow-ups" value={stats.followUpsDueToday} icon={Calendar} color="text-orange-400" bg="bg-orange-400/10" />
+        <StatCard label="Hot Leads" value={stats.hotLeads} icon={Flame} color="text-red-400" bg="bg-red-400/10" />
       </div>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Priority workflow</h2>
+          <Badge className="bg-emerald-400/10 text-emerald-300">{queue.length} active</Badge>
+        </div>
+        <div className="grid gap-3">
+          {queue.map(({ lead, score, nextAction, propertyMatches }) => {
+            const bestMatch = propertyMatches[0];
+
+            return (
+              <Card key={lead.id} className="space-y-3 border-white/5 bg-white/5 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-white">{lead.full_name}</p>
+                    <p className="text-xs text-slate-400">
+                      {lead.status ?? 'New'} • {lead.temperature ?? 'Warm'}
+                    </p>
+                  </div>
+                  <Badge className="border-none bg-emerald-400/15 text-emerald-300">{score}/100</Badge>
+                </div>
+
+                <p className="text-sm text-slate-300">{nextAction.label}</p>
+                <p className="text-xs text-slate-400">{nextAction.description}</p>
+
+                {bestMatch ? (
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Best match</p>
+                    <p className="mt-1 text-sm font-semibold text-white">{bestMatch.property.title}</p>
+                    <p className="text-xs text-slate-400">
+                      {bestMatch.property.location ?? 'Location unavailable'} • ₹
+                      {bestMatch.property.price?.toLocaleString() ?? 'N/A'}
+                    </p>
+                  </div>
+                ) : null}
+              </Card>
+            );
+          })}
+        </div>
+      </section>
 
       <PerformanceChart />
 

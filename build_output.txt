@@ -1,0 +1,22 @@
+
+> the-realest-project@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.6 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 11.8s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/leads/[id]/page.tsx:89:85
+Type error: 'prop.price' is possibly 'null'.
+
+  87 | ...
+  88 | ...emibold truncate text-sm">{prop.title}</h4>
+> 89 | ... text-slate-400 mt-1">{prop.location} ΓÇó Γé╣{(prop.price/100000).toFixed(1)}L</p>
+     |                                            ^
+  90 | ...
+  91 | ...
+  92 | ...
+Next.js build worker exited with code: 1 and signal: null

@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EstateFlow CRM
+
+Production-ready mobile-first Real Estate CRM built with Next.js 15, Supabase, and Twilio.
+
+## Features
+
+- **Lead Management:** Mobile-first lead tracking with source attribution and status management.
+- **Instant Call Bridge:** Automated agent-to-lead call bridging using Twilio Voice.
+- **One-Click Actions:** Send WhatsApp follow-ups and property details in one click.
+- **Property Inventory:** Complete inventory management with recommended properties for leads.
+- **Attendance System:** GPS-based check-in/out for field staff.
+- **Content Calendar:** Simple social media planning for marketing teams.
+- **Performance Reports:** Dashboard and reporting modules for business owners.
+
+## Tech Stack
+
+- **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, Lucide Icons.
+- **Backend:** Next.js API Routes & Server Actions.
+- **Database:** Supabase (Postgres) with Row Level Security.
+- **Communications:** Twilio (Voice/WhatsApp/SMS), Resend (Email).
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+- Node.js 20+
+- Supabase Account
+- Twilio Account (SID, Auth Token, Phone Number)
+- Resend Account (API Key)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 2. Environment Setup
+Create a `.env` file based on `.env.example`:
+```env
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=...
+RESEND_API_KEY=...
+DRY_RUN=1 # Enable for local testing without real calls/SMS
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Database Setup
+Run the SQL migrations in `db/migrations/001_init.sql` using the Supabase SQL Editor.
+Run the seed data in `db/seeds/seed.sql`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Installation
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
 
-## Learn More
+- `src/app`: Next.js pages and API routes.
+- `src/components`: UI components (Mobile-first).
+- `src/lib`: Supabase client, data fetching, and utilities.
+- `src/services`: External API adapters (Twilio, Resend).
+- `src/app/actions.ts`: Server actions for side-effects (Calls, Attendance).
 
-To learn more about Next.js, take a look at the following resources:
+## Webhook Intake
+External platforms can send leads to:
+`POST /api/webhooks/leads`
+Payload:
+```json
+{
+  "fullName": "John Doe",
+  "phone": "+919999999999",
+  "source": "Facebook Ads",
+  "propertyType": "Villa"
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+MIT

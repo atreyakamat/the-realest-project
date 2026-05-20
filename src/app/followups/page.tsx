@@ -1,5 +1,6 @@
 import { Card, Badge } from '@/components/ui';
 import { FollowupForm } from '@/components/followups/followup-form';
+import { FollowupSender } from '@/components/followups/followup-sender';
 import { getSessionUser } from '@/lib/auth';
 import { getLeads } from '@/lib/data';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
@@ -25,6 +26,14 @@ export default async function FollowupsPage() {
 
       <Card>
         <FollowupForm leads={leads} />
+      </Card>
+
+      <Card>
+        <div className="mb-4 space-y-1">
+          <h2 className="text-lg font-semibold text-white">One-click follow-up</h2>
+          <p className="text-sm text-slate-400">Pick a lead, channel, and template, then send and log it instantly.</p>
+        </div>
+        <FollowupSender leads={leads} />
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">

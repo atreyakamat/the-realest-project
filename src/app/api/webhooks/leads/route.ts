@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { assignLeadRoundRobin } from '@/services/leadAssignmentService';
+import { assignLeadRoundRobin, getAvailableSalesAgentCandidates } from '@/services/leadAssignmentService';
 import { bridgeCall } from '@/services/callService';
 
 const LeadPayload = z.object({
@@ -56,6 +56,11 @@ export async function POST(req: Request) {
 
     // Assign agent using round-robin
     const assignRes = await assignLeadRoundRobin(organizationId);
+    const allCandidates = await getAvailableSalesAgentCandidates(organizationId);
+    const orderedCandidates = [
+      ...allCandidates.filter((item) => item.teamMemberId === assignRes.agentId),
+      ...allCandidates.filter((item) => item.teamMemberId !== assignRes.agentId),
+    ].filter((item) => item.phone);
 
     if (assignRes.agentId) {
       await supabaseServer
@@ -80,65 +85,78 @@ export async function POST(req: Request) {
       });
     }
 
-    // Trigger call bridge automation
+    // Trigger call bridge automation with retry on available agents.
     const dryRun = process.env.DRY_RUN === '1' || process.env.NODE_ENV !== 'production';
+    let bridged = false;
 
-    try {
-      let agentPhone = undefined;
-      if (assignRes.agentId) {
-        const { data: agent } = await supabaseServer
-          .from('team_members')
-          .select('profile_id')
-          .eq('id', assignRes.agentId)
-          .single();
-        
-        if (agent?.profile_id) {
-          const { data: profile } = await supabaseServer
-            .from('profiles')
-            .select('phone')
-            .eq('id', agent.profile_id)
-            .single();
-          agentPhone = profile?.phone;
-        }
+    for (const candidate of orderedCandidates) {
+      try {
+        const callResult = await bridgeCall({
+          organizationId,
+          agentPhone: candidate.phone ?? '',
+          leadPhone: parsed.phone,
+          leadId: lead.id,
+          agentId: candidate.teamMemberId,
+          dryRun,
+        });
+
+        await supabaseServer.from('leads').update({ assigned_agent_id: candidate.teamMemberId }).eq('id', lead.id);
+
+        await supabaseServer.from('calls').insert({
+          organization_id: organizationId,
+          lead_id: lead.id,
+          agent_id: candidate.teamMemberId,
+          call_sid: callResult.call_sid,
+          conference_sid: callResult.conference_sid,
+          status: callResult.status,
+          duration: callResult.duration,
+          recording_url: callResult.recording_url,
+          started_at: callResult.started_at,
+          ended_at: callResult.ended_at,
+          outcome: callResult.outcome,
+        });
+
+        bridged = true;
+        break;
+      } catch (error) {
+        console.error('Bridge attempt failed for candidate', candidate.teamMemberId, error);
       }
-
-      const callResult = await bridgeCall({
-        organizationId: organizationId as string,
-        agentPhone: agentPhone || process.env.TWILIO_PHONE_NUMBER || '',
-        leadPhone: parsed.phone,
-        leadId: lead.id,
-        agentId: assignRes.agentId || undefined,
-        dryRun
-      });
-
-      // Log call
-      await supabaseServer.from('calls').insert({
-        organization_id: organizationId,
-        lead_id: lead.id,
-        agent_id: assignRes.agentId,
-        call_sid: callResult.call_sid,
-        conference_sid: callResult.conference_sid,
-        status: callResult.status,
-        duration: callResult.duration,
-        recording_url: callResult.recording_url,
-        started_at: callResult.started_at,
-        ended_at: callResult.ended_at,
-        outcome: callResult.outcome
-      });
-
-    } catch (err) {
-      console.error('Call bridge error', err);
-      // create follow-up task
-      await supabaseServer.from('tasks').insert({
-        organization_id: organizationId,
-        title: 'Call Pending: ' + parsed.fullName,
-        payload: { lead_id: lead.id }
-      });
     }
 
-    return NextResponse.json({ ok: true, leadId: lead.id });
+    if (!bridged) {
+      await supabaseServer.from('leads').update({ status: 'Call Pending' }).eq('id', lead.id);
+
+      await supabaseServer.from('tasks').insert({
+        organization_id: organizationId,
+        title: `Call Pending: ${parsed.fullName}`,
+        payload: { lead_id: lead.id },
+      });
+
+      const { data: managers } = await supabaseServer
+        .from('team_members')
+        .select('profile_id')
+        .eq('organization_id', organizationId)
+        .eq('role', 'Sales Manager')
+        .eq('is_active', true);
+
+      if (managers?.length) {
+        await supabaseServer.from('notifications').insert(
+          managers
+            .filter((manager) => manager.profile_id)
+            .map((manager) => ({
+              organization_id: organizationId,
+              user_id: manager.profile_id,
+              type: 'missed_lead_call',
+              payload: { lead_id: lead.id, lead_name: lead.full_name },
+            })),
+        );
+      }
+    }
+
+    return NextResponse.json({ ok: true, leadId: lead.id, bridged });
   } catch (err) {
     console.error('Webhook handler error', err);
     return NextResponse.json({ error: 'INVALID_PAYLOAD' }, { status: 400 });
   }
 }
+

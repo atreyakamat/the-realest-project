@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '../../lib/supabase-server';
 import { requireSessionUser } from '../../lib/auth';
+import { sharePropertyWithLead } from '../../services/propertyShareService';
 
 const leadSchema = z.object({
   fullName: z.string().min(2),
@@ -80,44 +81,25 @@ export async function sharePropertyWithLeadAction(_prevState: { message: string;
   const leadId = String(formData.get('leadId') ?? '');
   const propertyId = String(formData.get('propertyId') ?? '');
   const channel = String(formData.get('channel') ?? 'WhatsApp');
-  const supabase = await createSupabaseServerClient();
 
   if (!leadId || !propertyId) {
     return { message: '', error: 'Select a lead and a property.' };
   }
 
-  const leadResult = await supabase.from('leads').select('id, full_name, phone').eq('id', leadId).single();
-  const propertyResult = await supabase.from('properties').select('id, title, location, price').eq('id', propertyId).single();
+  try {
+    const result = await sharePropertyWithLead({
+      organizationId: user.organizationId ?? '',
+      actorId: user.id,
+      leadId,
+      propertyId,
+      channel,
+    });
 
-  const lead = leadResult.data;
-  const property = propertyResult.data;
+    revalidatePath(`/leads/${result.leadId}`);
+    revalidatePath('/properties');
 
-  if (!lead || !property) {
-    return { message: '', error: 'Unable to load lead or property.' };
+    return { message: 'Property shared and logged in the timeline.', error: '' };
+  } catch (error) {
+    return { message: '', error: error instanceof Error ? error.message : 'Unable to share property.' };
   }
-
-  const shareLink = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/share/properties/${property.id}`;
-  const message = `Hi ${lead.full_name}, sharing details of ${property.title} in ${property.location}. Price: ₹${property.price?.toLocaleString() ?? '-'} . Photos and details: ${shareLink}`;
-
-  await supabase.from('lead_property_shares').insert({
-    lead_id: lead.id,
-    property_id: property.id,
-    shared_by: user.id,
-    channel,
-    message,
-    share_link: shareLink,
-  });
-
-  await supabase.from('activities').insert({
-    organization_id: user.organizationId,
-    lead_id: lead.id,
-    actor_id: user.id,
-    type: 'property_shared',
-    payload: { property_id: property.id, channel, message },
-  });
-
-  revalidatePath(`/leads/${lead.id}`);
-  revalidatePath('/properties');
-
-  return { message: 'Property shared and logged in the timeline.', error: '' };
 }

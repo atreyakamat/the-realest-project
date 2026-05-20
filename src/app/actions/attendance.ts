@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createSupabaseServerClient } from '../../lib/supabase-server';
 import { requireSessionUser } from '../../lib/auth';
+import { checkInAttendance, checkOutAttendance } from '../../services/attendanceService';
 
 type AttendancePayload = {
   latitude: number | null;
@@ -15,31 +16,23 @@ async function saveAttendance(eventType: 'check_in' | 'check_out', payload: Atte
   const user = await requireSessionUser();
   const supabase = await createSupabaseServerClient();
 
-  const columnMap =
-    eventType === 'check_in'
-      ? {
-          check_in_time: new Date().toISOString(),
-          check_in_latitude: payload.latitude,
-          check_in_longitude: payload.longitude,
-          selfie_url: payload.selfieUrl,
-          status: 'present',
-        }
-      : {
-          check_out_time: new Date().toISOString(),
-          check_out_latitude: payload.latitude,
-          check_out_longitude: payload.longitude,
-          status: 'completed',
-        };
-
-  const { error } = await supabase.from('attendance').insert({
-    organization_id: user.organizationId,
-    user_id: user.id,
-    ...columnMap,
-    notes: payload.notes,
-  });
-
-  if (error) {
-    throw error;
+  if (eventType === 'check_in') {
+    await checkInAttendance({
+      organizationId: user.organizationId ?? '',
+      userId: user.id,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      selfieUrl: payload.selfieUrl,
+      notes: payload.notes,
+    });
+  } else {
+    await checkOutAttendance({
+      organizationId: user.organizationId ?? '',
+      userId: user.id,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      notes: payload.notes,
+    });
   }
 
   await supabase.from('notifications').insert({

@@ -10,11 +10,9 @@ type BridgeCallOptions = {
 };
 
 export async function bridgeCall({
-  organizationId,
   agentPhone,
   leadPhone,
   leadId,
-  agentId,
   dryRun,
 }: BridgeCallOptions) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -22,7 +20,7 @@ export async function bridgeCall({
   const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
   if (dryRun || !accountSid || !authToken || !twilioPhone) {
-    console.log('[DRY-RUN] Bridging call:', { agentPhone, leadPhone, leadId, agentId });
+    console.log('[DRY-RUN] Bridging call:', { agentPhone, leadPhone, leadId });
     const started = new Date();
     return {
       call_sid: `DRY-${Date.now()}`,
@@ -39,11 +37,6 @@ export async function bridgeCall({
   const client = twilio(accountSid, authToken);
 
   try {
-    // 1. Call the Agent first
-    // In a real production app, 'url' would point to a webhook that returns TwiML
-    // to ask the agent to press a key and then dial the lead.
-    // For this implementation, we'll initiate the call with a TwiML response.
-    
     const conferenceName = `conf_${leadId}_${Date.now()}`;
     
     const call = await client.calls.create({
@@ -57,7 +50,6 @@ export async function bridgeCall({
               </Response>`
     });
 
-    // 2. Call the Lead and put them in the same conference
     await client.calls.create({
       to: leadPhone,
       from: twilioPhone,

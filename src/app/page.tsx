@@ -13,6 +13,7 @@ import {
   Search
 } from "lucide-react";
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
 
 export default async function DashboardPage() {
   const orgId = null; // In real app, get from auth session
@@ -119,7 +120,15 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color, bg }: any) {
+interface StatCardProps {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+}
+
+function StatCard({ label, value, icon: Icon, color, bg }: StatCardProps) {
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg} ${color}`}>

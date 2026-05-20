@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui';
 import { Phone, MessageSquare, Mail, Share2 } from 'lucide-react';
 import { initiateCall, sendWhatsAppFollowup } from '@/app/actions';
 import { toast } from 'sonner';
+import type { LucideIcon } from 'lucide-react';
 
 type Props = {
   leadId: string;
@@ -70,7 +70,15 @@ export function LeadQuickActions({ leadId, phone, name }: Props) {
   );
 }
 
-function ActionButton({ icon: Icon, label, onClick, loading, color }: any) {
+interface ActionButtonProps {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+  loading?: boolean;
+  color: string;
+}
+
+function ActionButton({ icon: Icon, label, onClick, loading, color }: ActionButtonProps) {
   return (
     <button
       disabled={loading}

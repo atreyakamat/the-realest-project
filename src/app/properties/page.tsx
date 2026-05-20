@@ -3,12 +3,10 @@ import { Card, Badge, Input } from "@/components/ui";
 import { 
   Search, 
   Filter, 
-  ChevronRight, 
   Building2, 
   Bed, 
   Bath, 
-  Maximize,
-  CircleDollarSign
+  Maximize
 } from "lucide-react";
 import Link from "next/link";
 
@@ -67,7 +65,7 @@ export default async function PropertiesPage() {
                       {prop.size}
                     </div>
                   </div>
-                  <p className="text-sm font-bold text-emerald-400">₹{((prop.price ?? 0) / 100000).toFixed(1)}L</p>
+                  <p className="text-sm font-bold text-emerald-400">₹{((prop.price || 0)/100000).toFixed(1)}L</p>
                 </div>
               </div>
             </Card>

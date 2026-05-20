@@ -4,9 +4,6 @@ import {
   Search, 
   Filter, 
   ChevronRight, 
-  Phone, 
-  Mail, 
-  MessageSquare,
   Flame,
   User
 } from "lucide-react";

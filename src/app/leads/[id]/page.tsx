@@ -1,11 +1,8 @@
 import { getLeadById, getLeadTimeline, getProperties } from "@/lib/data";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge } from "@/components/ui";
 import { 
   ChevronLeft, 
-  MapPin, 
-  CircleDollarSign, 
   Building2, 
-  Calendar,
   History,
   Lightbulb,
   User,
@@ -48,7 +45,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
 
-        <LeadQuickActions leadId={lead.id} phone={lead.phone} name={lead.full_name} />
+        <LeadQuickActions leadId={lead.id} phone={lead.phone || ''} name={lead.full_name || ''} />
       </Card>
 
       <div className="grid grid-cols-1 gap-4">
@@ -58,18 +55,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             Requirement
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <InfoCard icon={Building2} label="Type" value={lead.property_type} />
-            <InfoCard icon={MapPin} label="Location" value={lead.preferred_location} />
-            <InfoCard
-              icon={CircleDollarSign}
-              label="Budget"
-              value={`₹${((lead.budget_min ?? 0) / 100000).toFixed(1)}L - ${((lead.budget_max ?? 0) / 100000).toFixed(1)}L`}
-            />
-            <InfoCard icon={Calendar} label="Follow-up" value={lead.next_followup ? new Date(lead.next_followup).toLocaleDateString() : 'Not set'} />
+            <InfoCard label="Type" value={lead.property_type || 'N/A'} />
+            <InfoCard label="Location" value={lead.preferred_location || 'N/A'} />
+            <InfoCard label="Budget" value={`₹${((lead.budget_min || 0)/100000).toFixed(1)}L - ${((lead.budget_max || 0)/100000).toFixed(1)}L`} />
+            <InfoCard label="Follow-up" value={lead.next_followup ? new Date(lead.next_followup).toLocaleDateString() : 'Not set'} />
           </div>
           {lead.notes && (
             <Card className="bg-white/5 border-none">
-              <p className="text-sm text-slate-300 italic">"{lead.notes}"</p>
+              <p className="text-sm text-slate-300 italic">&ldquo;{lead.notes}&rdquo;</p>
             </Card>
           )}
         </section>
@@ -88,7 +81,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                   </div>
                   <div className="p-3">
                     <h4 className="font-semibold truncate text-sm">{prop.title}</h4>
-                    <p className="text-xs text-slate-400 mt-1">{prop.location} • ₹{((prop.price ?? 0) / 100000).toFixed(1)}L</p>
+                    <p className="text-xs text-slate-400 mt-1">{prop.location} • ₹{((prop.price || 0)/100000).toFixed(1)}L</p>
                   </div>
                 </Card>
               </Link>
@@ -111,7 +104,11 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{event.type.replace(/_/g, ' ')}</p>
-                  <p className="text-xs text-slate-400">{formatTimelinePayload(event.payload)}</p>
+                  <p className="text-xs text-slate-400">
+                    {typeof event.payload === 'object' && event.payload !== null && 'message' in event.payload 
+                      ? (event.payload as { message: string }).message 
+                      : JSON.stringify(event.payload)}
+                  </p>
                   <p className="mt-1 text-[10px] text-slate-500">{new Date(event.created_at).toLocaleString()}</p>
                 </div>
               </div>
@@ -123,7 +120,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   );
 }
 
-function InfoCard({ icon: Icon, label, value }: any) {
+interface InfoCardProps {
+  label: string;
+  value: string;
+}
+
+function InfoCard({ label, value }: InfoCardProps) {
   return (
     <Card className="bg-white/5 border-none p-3">
       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{label}</p>
@@ -136,12 +138,4 @@ function ActivityIcon({ type }: { type: string }) {
   if (type.includes('call')) return <Phone className="h-3 w-3" />;
   if (type.includes('message')) return <MessageSquare className="h-3 w-3" />;
   return <ArrowRight className="h-3 w-3" />;
-}
-
-function formatTimelinePayload(payload: unknown) {
-  if (payload && typeof payload === 'object' && 'message' in payload && typeof (payload as { message?: unknown }).message === 'string') {
-    return (payload as { message: string }).message;
-  }
-
-  return JSON.stringify(payload ?? {});
 }

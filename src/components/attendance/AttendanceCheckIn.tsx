@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Card } from '@/components/ui';
-import { MapPin, MapPinned, CheckCircle2 } from 'lucide-react';
+import { MapPinned, CheckCircle2 } from 'lucide-react';
 import { checkInAttendance } from '@/app/actions';
 import { toast } from 'sonner';
 
@@ -30,7 +30,7 @@ export function AttendanceCheckIn() {
         }
         setLoading(false);
       },
-      (error) => {
+      () => {
         toast.error('Location access denied');
         setLoading(false);
       }

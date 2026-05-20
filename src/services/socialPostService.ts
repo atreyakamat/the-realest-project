@@ -8,7 +8,6 @@ type CreateSocialPostOptions = {
   status: string;
   scheduledAt: string | null;
   assignedTo: string | null;
-  notes: string | null;
   media?: string[];
 };
 
@@ -24,7 +23,6 @@ export async function createSocialPost(options: CreateSocialPostOptions) {
       status: options.status,
       scheduled_at: options.scheduledAt,
       assigned_to: options.assignedTo,
-      notes: options.notes,
       media: options.media ?? [],
     } as never)
     .select('id')

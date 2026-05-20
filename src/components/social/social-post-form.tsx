@@ -26,7 +26,6 @@ export function SocialPostForm() {
         ))}
       </Select>
       <Input name="scheduledAt" type="datetime-local" />
-      <Textarea name="notes" placeholder="Notes" className="md:col-span-2" />
 
       {state?.error ? <p className="md:col-span-2 text-sm text-rose-300">{state.error}</p> : null}
       {state?.message ? <p className="md:col-span-2 text-sm text-emerald-300">{state.message}</p> : null}

@@ -11,7 +11,6 @@ const socialPostSchema = z.object({
   postType: z.string().min(2),
   status: z.enum(['idea', 'draft', 'scheduled', 'published']),
   scheduledAt: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 export async function createSocialPostAction(_prevState: { message: string; error: string }, formData: FormData) {
@@ -22,7 +21,6 @@ export async function createSocialPostAction(_prevState: { message: string; erro
     postType: formData.get('postType'),
     status: formData.get('status'),
     scheduledAt: formData.get('scheduledAt'),
-    notes: formData.get('notes'),
   });
 
   if (!parsed.success) {
@@ -38,7 +36,6 @@ export async function createSocialPostAction(_prevState: { message: string; erro
       status: parsed.data.status,
       scheduledAt: parsed.data.scheduledAt || null,
       assignedTo: user.id,
-      notes: parsed.data.notes || null,
       media: [],
     });
 

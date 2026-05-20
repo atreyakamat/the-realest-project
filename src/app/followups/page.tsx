@@ -42,7 +42,7 @@ export default async function FollowupsPage() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="font-semibold text-white">{(item as { leads?: { full_name?: string } }).leads?.full_name ?? 'Lead'}</h3>
-                <p className="text-sm text-slate-400">Due {new Date(item.due_at).toLocaleString()}</p>
+                <p className="text-sm text-slate-400">Due {item.due_at ? new Date(item.due_at).toLocaleString() : 'Not scheduled'}</p>
               </div>
               <Badge>{item.status}</Badge>
             </div>

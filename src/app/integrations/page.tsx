@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Card, Badge } from '@/components/ui';
+import { Badge, Card } from '@/components/ui';
 
 const integrations = [
   { name: 'Supabase', status: 'Connected', detail: 'Auth, database, storage, and realtime' },
@@ -14,7 +14,9 @@ export default function IntegrationsPage() {
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Connections</p>
         <h1 className="text-3xl font-semibold text-white">Integrations</h1>
-        <p className="max-w-2xl text-sm leading-6 text-slate-300">Track service readiness and jump to the settings page when you need to update secrets.</p>
+        <p className="max-w-2xl text-sm leading-6 text-slate-300">
+          Track service readiness and jump to the settings page when you need to update secrets.
+        </p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">

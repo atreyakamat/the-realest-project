@@ -3,7 +3,7 @@
  * Converts data arrays to CSV format for download
  */
 
-export function convertToCSV(data: Record<string, any>[], headers?: string[]): string {
+export function convertToCSV(data: Record<string, unknown>[], headers?: string[]): string {
   if (data.length === 0) return '';
 
   // Use provided headers or extract from first object

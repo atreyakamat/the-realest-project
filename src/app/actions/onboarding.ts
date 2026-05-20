@@ -63,7 +63,7 @@ export async function CompleteOnboardingAction(
     const settingsToSave = [
       { key: 'assignment_mode', value: 'round_robin', is_secret: false },
       ...Object.entries(apiKeys)
-        .filter(([_, value]) => value)
+        .filter(([, value]) => value)
         .map(([key, value]) => ({
           key,
           value: String(value),

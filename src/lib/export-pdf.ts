@@ -16,10 +16,10 @@ export interface ReportData {
   title: string;
   generatedAt: string;
   metrics?: DashboardMetrics;
-  leads?: Array<Record<string, any>>;
-  properties?: Array<Record<string, any>>;
-  calls?: Array<Record<string, any>>;
-  attendance?: Array<Record<string, any>>;
+  leads?: Array<Record<string, unknown>>;
+  properties?: Array<Record<string, unknown>>;
+  calls?: Array<Record<string, unknown>>;
+  attendance?: Array<Record<string, unknown>>;
 }
 
 /**
@@ -172,7 +172,7 @@ export function generateDashboardHTML(data: ReportData): string {
  * Download HTML as PDF using print dialog
  * (In production, consider using a library like html2pdf or pdfkit)
  */
-export function downloadPDF(htmlContent: string, filename: string) {
+export function downloadPDF(htmlContent: string) {
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
@@ -195,12 +195,12 @@ export function downloadPDF(htmlContent: string, filename: string) {
 /**
  * Generate and download dashboard report as PDF
  */
-export function exportDashboardToPDF(metrics: DashboardMetrics, filename = 'dashboard-report.html') {
+export function exportDashboardToPDF(metrics: DashboardMetrics) {
   const html = generateDashboardHTML({
     title: 'Dashboard Report',
     generatedAt: new Date().toLocaleString(),
     metrics,
   });
 
-  downloadPDF(html, filename);
+  downloadPDF(html);
 }

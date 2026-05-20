@@ -5,7 +5,7 @@ import { useActionState } from 'react';
 import type { LeadRecord } from '../../lib/estateflow-types';
 import type { PropertyRecord } from '../../lib/estateflow-types';
 import { sharePropertyWithLeadAction } from '../../app/actions/leads';
-import { Button, Select, Textarea, Input } from '../ui';
+import { Button, Select, Textarea } from '../ui';
 
 const initialState = { message: '', error: '' };
 const channels = ['WhatsApp', 'SMS', 'Email'] as const;

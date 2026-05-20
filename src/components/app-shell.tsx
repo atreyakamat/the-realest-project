@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Bell, Building2, Clock3, LayoutDashboard, LogOut, MoreHorizontal, Phone, Users } from 'lucide-react';
+import { Bell, Building2, Clock3, LayoutDashboard, LogOut, MoreHorizontal, Phone } from 'lucide-react';
 import { signOutAction } from '../app/actions/auth';
 import { MobileNav } from './mobile-nav';
 import { Button } from './ui';
@@ -16,8 +15,6 @@ const navItems = [
 ];
 
 export function AppShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
-  const pathname = usePathname();
-
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
       <header className="sticky top-4 z-30 mb-4 rounded-[1.75rem] border border-white/10 bg-slate-950/80 px-4 py-4 shadow-2xl shadow-black/30 backdrop-blur">

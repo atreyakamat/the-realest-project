@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 
+interface AttendanceExportRecord {
+  profiles?: {
+    full_name?: string | null;
+  } | null;
+  check_in_time: string;
+  check_out_time?: string | null;
+  status?: string | null;
+  notes?: string | null;
+}
+
 /**
  * GET /api/export/attendance?format=csv&dateFrom=2024-01-01&dateTo=2024-12-31
  * Export attendance records as CSV or JSON
@@ -28,21 +38,22 @@ export async function GET(request: NextRequest) {
     if (dateTo) query = query.lte('check_in_time', dateTo);
 
     const { data: records, error } = await query;
+    const attendanceRecords = (records ?? []) as AttendanceExportRecord[];
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     if (format === 'json') {
-      return NextResponse.json(records);
+      return NextResponse.json(attendanceRecords);
     }
 
-    if (!records || records.length === 0) {
+    if (attendanceRecords.length === 0) {
       return NextResponse.json({ error: 'No data to export' }, { status: 400 });
     }
 
     const headers = ['Employee', 'Check In', 'Check Out', 'Status', 'Notes'];
-    const rows = records.map((record: any) => [
+    const rows = attendanceRecords.map((record) => [
       record.profiles?.full_name || 'Unknown',
       new Date(record.check_in_time).toLocaleString(),
       record.check_out_time ? new Date(record.check_out_time).toLocaleString() : 'N/A',

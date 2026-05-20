@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { Button } from '@/components/ui';
 import { OnboardingData } from './onboarding-wizard';
 import { CheckCircle, AlertCircle } from 'lucide-react';
@@ -12,8 +11,6 @@ interface Step6Props {
 }
 
 export function OnboardingStep6Review({ data, onSubmit, pending }: Step6Props) {
-  const [showForm, setShowForm] = React.useState(false);
-
   const handleFormSubmit = async (formData: FormData) => {
     await onSubmit(formData);
   };
@@ -106,7 +103,7 @@ export function OnboardingStep6Review({ data, onSubmit, pending }: Step6Props) {
 
       <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
         <p className="text-sm text-slate-300">
-          <span className="font-semibold text-emerald-300">You're all set!</span> Your EstateFlow CRM is ready. You can customize everything later from the admin dashboard.
+          <span className="font-semibold text-emerald-300">You&apos;re all set!</span> Your EstateFlow CRM is ready. You can customize everything later from the admin dashboard.
         </p>
       </div>
 

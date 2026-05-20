@@ -30,4 +30,3 @@ Use `.env.example` as the source of truth for runtime variables. Secrets should 
 - `npm run dev` to run the app locally.
 - `npm run build` to verify the production build.
 - `npm run db:seed` to apply the schema and seed data with a local Postgres connection.
-

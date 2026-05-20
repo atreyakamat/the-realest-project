@@ -62,7 +62,7 @@ export function OnboardingStep2AdminInfo({ data, onComplete }: Step2Props) {
 
       <div className="rounded-2xl border border-blue-400/20 bg-blue-400/5 p-4">
         <p className="text-sm text-slate-300">
-          <span className="font-semibold text-blue-300">Note:</span> You'll have full access to all team members, settings, and integrations.
+          <span className="font-semibold text-blue-300">Note:</span> You&apos;ll have full access to all team members, settings, and integrations.
         </p>
       </div>
 

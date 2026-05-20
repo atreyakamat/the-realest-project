@@ -33,7 +33,7 @@ export function OnboardingStep1OrgInfo({ data, onComplete }: Step1Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <h2 className="mb-1 text-2xl font-semibold text-white">Welcome to EstateFlow CRM</h2>
-        <p className="text-sm text-slate-400">Let's set up your organization in a few simple steps.</p>
+        <p className="text-sm text-slate-400">Let&apos;s set up your organization in a few simple steps.</p>
       </div>
 
       <div className="space-y-4">

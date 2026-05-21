@@ -2,20 +2,25 @@ import { createSupabaseAdminClient } from '@/lib/supabase-admin';
 import { transcribeAndAnalyzeCall } from '@/services/aiService';
 
 export async function processCallRecording(args: {
-  organizationId: string;
+  organizationId?: string | null;
   callSid: string;
   recordingUrl: string;
   recordingDuration?: number | null;
 }) {
   const supabase = createSupabaseAdminClient();
-  const { organizationId, callSid, recordingUrl, recordingDuration = null } = args;
+  const { callSid, recordingUrl, recordingDuration = null } = args;
 
-  const { data: call } = await supabase
-    .from('calls')
-    .select('id, lead_id, organization_id, call_sid')
-    .eq('organization_id', organizationId)
-    .eq('call_sid', callSid)
-    .maybeSingle();
+  let callLookup = supabase.from('calls').select('id, lead_id, organization_id, call_sid').eq('call_sid', callSid);
+  if (args.organizationId) {
+    callLookup = callLookup.eq('organization_id', args.organizationId);
+  }
+
+  const { data: call } = await callLookup.maybeSingle();
+  const organizationId = args.organizationId ?? call?.organization_id;
+
+  if (!organizationId) {
+    throw new Error('Missing organization context for call recording processing');
+  }
 
   const insight = await transcribeAndAnalyzeCall(recordingUrl);
 

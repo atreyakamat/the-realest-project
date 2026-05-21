@@ -13,8 +13,8 @@ export async function POST(req: Request) {
       url.searchParams.get('organizationId') ?? form.get('OrganizationId') ?? process.env.DEFAULT_ORGANIZATION_ID ?? '',
     );
 
-    if (!callSid || !recordingUrlRaw || !organizationId) {
-      return NextResponse.json({ error: 'Missing callSid, recordingUrl, or organizationId' }, { status: 400 });
+    if (!callSid || !recordingUrlRaw) {
+      return NextResponse.json({ error: 'Missing callSid or recordingUrl' }, { status: 400 });
     }
 
     if (recordingStatus && recordingStatus !== 'completed') {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const recordingUrl = recordingUrlRaw.endsWith('.mp3') ? recordingUrlRaw : `${recordingUrlRaw}.mp3`;
 
     const result = await processCallRecording({
-      organizationId,
+      organizationId: organizationId || null,
       callSid,
       recordingUrl,
       recordingDuration: Number.isFinite(recordingDuration) ? recordingDuration : null,

@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Card, Badge } from '../ui';
 import type { LeaderboardRow } from '@/lib/leaderboard';
 
@@ -14,10 +17,27 @@ export function ReportsPanel({
   lost: number;
   leaderboard: LeaderboardRow[];
 }) {
+  const [tab, setTab] = useState<'overview' | 'leaderboard'>('overview');
   const topCloser = leaderboard[0] ?? null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setTab('overview')}
+          className={`rounded-full px-4 py-2 text-sm ${tab === 'overview' ? 'bg-emerald-400 text-slate-950' : 'bg-white/5 text-slate-300'}`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setTab('leaderboard')}
+          className={`rounded-full px-4 py-2 text-sm ${tab === 'leaderboard' ? 'bg-emerald-400 text-slate-950' : 'bg-white/5 text-slate-300'}`}
+        >
+          Leaderboard
+        </button>
+      </div>
+
+      {tab === 'overview' ? <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <Badge>Leads by source</Badge>
         <div className="mt-4 space-y-3">
@@ -57,6 +77,19 @@ export function ReportsPanel({
       </Card>
 
       <Card className="lg:col-span-2">
+        <Badge>Weekly leader snapshot</Badge>
+        {topCloser ? (
+          <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
+            <p className="text-sm text-emerald-100">{topCloser.agentName} is leading this week</p>
+            <p className="mt-1 text-xs text-emerald-200">Score: {topCloser.score}</p>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-slate-400">No leaderboard data yet.</p>
+        )}
+      </Card>
+      </div> : null}
+
+      {tab === 'leaderboard' ? <Card>
         <div className="flex items-center justify-between gap-3">
           <Badge>Top closer leaderboard</Badge>
           {topCloser ? <span className="text-xs text-emerald-300">Weekly leader: {topCloser.agentName}</span> : null}
@@ -89,7 +122,7 @@ export function ReportsPanel({
           </table>
           {leaderboard.length === 0 ? <p className="px-3 py-4 text-sm text-slate-400">No active team members or performance records yet.</p> : null}
         </div>
-      </Card>
+      </Card> : null}
     </div>
   );
 }

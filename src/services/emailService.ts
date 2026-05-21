@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
 type SendEmailOptions = {
-  to: string;
+  to: string | string[];
   subject: string;
   text?: string;
   html?: string;

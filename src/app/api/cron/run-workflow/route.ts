@@ -6,7 +6,8 @@ export async function POST() {
   try {
     const result = await runWorkflowExecutor(50);
     return NextResponse.json({ ok: true, processed: result.processed });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

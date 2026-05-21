@@ -42,7 +42,7 @@ export default async function DashboardPage() {
           <Badge className="bg-emerald-400/10 text-emerald-300">{queue.length} active</Badge>
         </div>
         <div className="grid gap-3">
-          {queue.map(({ lead, priorityScore, urgencyScore, nextAction, propertyMatches }) => {
+          {queue.map(({ lead, priorityScore, nextAction, propertyMatches }) => {
             const bestMatch = propertyMatches[0];
 
             return (

@@ -26,8 +26,9 @@ export default function TakeActionButton({ leadId, actionId, children }: Props) 
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Request failed');
       setSuccess('Action recorded (dry-run)');
-    } catch (err: any) {
-      setError(err.message ?? String(err));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
     } finally {
       setLoading(false);
     }

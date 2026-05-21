@@ -25,19 +25,20 @@ export async function runWorkflowExecutor(limit = 20) {
     const id = action.id;
     const leadId = action.lead_id;
     const actionId = action.action_id;
-    const actionPayload = action.action_payload;
+    // action.action_payload is available on the DB record when needed
 
     try {
       // Fetch lead record
       const { data: leadData, error: leadErr } = await supabase.from('leads').select('*').eq('id', leadId).single();
       if (leadErr || !leadData) throw new Error(leadErr?.message || 'Lead not found');
-      const lead: LeadRecord = leadData as any;
+      const lead: LeadRecord = leadData as LeadRecord;
 
       // Fetch inventory to compute matches when needed
       const { data: propsData } = await supabase.from('properties').select('*').limit(50);
-      const properties: PropertyRecord[] = (propsData || []) as any;
+      const properties: PropertyRecord[] = (propsData || []) as PropertyRecord[];
 
-      let result: any = { ok: true, notes: [] };
+      type ExecutorResult = { ok: boolean; notes: unknown[] } & Record<string, unknown>;
+      const result: ExecutorResult = { ok: true, notes: [] };
 
       if (actionId === 'call_now') {
         // attempt to bridge a call using Twilio (callService)
@@ -55,9 +56,12 @@ export async function runWorkflowExecutor(limit = 20) {
         for (const m of matches.slice(0, 3)) {
           try {
             await sharePropertyWithLead({ organizationId: '', actorId: 'system', leadId: lead.id, propertyId: m.property.id, channel: 'whatsapp' });
-            result.shared.push({ propertyId: m.property.id, ok: true });
-          } catch (err: any) {
-            result.shared.push({ propertyId: m.property.id, ok: false, error: err.message ?? String(err) });
+            (result.shared as unknown[] | undefined) ??= [];
+            (result.shared as unknown[]).push({ propertyId: m.property.id, ok: true });
+          } catch (err: unknown) {
+            (result.shared as unknown[] | undefined) ??= [];
+            const msg = err instanceof Error ? err.message : String(err);
+            (result.shared as unknown[]).push({ propertyId: m.property.id, ok: false, error: msg });
           }
         }
 
@@ -97,11 +101,12 @@ export async function runWorkflowExecutor(limit = 20) {
         .eq('id', id);
 
       processed += 1;
-    } catch (err: any) {
+    } catch (err: unknown) {
       // mark as failed with error details
+      const msg = err instanceof Error ? err.message : String(err);
       await supabase
         .from('workflow_actions')
-        .update({ status: 'failed', result: { error: err.message ?? String(err) }, executed_at: new Date().toISOString() })
+        .update({ status: 'failed', result: { error: msg }, executed_at: new Date().toISOString() })
         .eq('id', action.id);
     }
   }

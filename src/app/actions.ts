@@ -3,14 +3,16 @@
 import { bridgeCall } from '@/services/callService';
 import { sendMessage } from '@/services/messageService';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { requireSessionUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
 export async function initiateCall(leadId: string, leadPhone: string, agentPhone: string) {
+  const user = await requireSessionUser();
   const dryRun = process.env.DRY_RUN === '1';
   
   try {
     const res = await bridgeCall({
-      organizationId: 'demo-org',
+      organizationId: user.organizationId ?? 'demo-org',
       agentPhone,
       leadPhone,
       leadId,
@@ -19,7 +21,9 @@ export async function initiateCall(leadId: string, leadPhone: string, agentPhone
 
     const supabase = await createSupabaseServerClient();
     await supabase.from('activities').insert({
+      organization_id: user.organizationId,
       lead_id: leadId,
+      actor_id: user.id,
       type: 'call_initiated',
       payload: { call_sid: res.call_sid }
     });
@@ -33,6 +37,7 @@ export async function initiateCall(leadId: string, leadPhone: string, agentPhone
 }
 
 export async function sendWhatsAppFollowup(leadId: string, leadPhone: string, message: string) {
+  const user = await requireSessionUser();
   const dryRun = process.env.DRY_RUN === '1';
   
   try {
@@ -45,7 +50,9 @@ export async function sendWhatsAppFollowup(leadId: string, leadPhone: string, me
 
     const supabase = await createSupabaseServerClient();
     await supabase.from('activities').insert({
+      organization_id: user.organizationId,
       lead_id: leadId,
+      actor_id: user.id,
       type: 'message_sent',
       payload: { sid: res.sid, channel: 'whatsapp', body: message }
     });

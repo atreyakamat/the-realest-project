@@ -42,7 +42,7 @@ export default async function DashboardPage() {
           <Badge className="bg-emerald-400/10 text-emerald-300">{queue.length} active</Badge>
         </div>
         <div className="grid gap-3">
-          {queue.map(({ lead, score, nextAction, propertyMatches }) => {
+          {queue.map(({ lead, priorityScore, urgencyScore, nextAction, propertyMatches }) => {
             const bestMatch = propertyMatches[0];
 
             return (
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
                       {lead.status ?? 'New'} • {lead.temperature ?? 'Warm'}
                     </p>
                   </div>
-                  <Badge className="border-none bg-emerald-400/15 text-emerald-300">{score}/100</Badge>
+                  <Badge className="border-none bg-emerald-400/15 text-emerald-300">{priorityScore}/100</Badge>
                 </div>
 
                 <p className="text-sm text-slate-300">{nextAction.label}</p>

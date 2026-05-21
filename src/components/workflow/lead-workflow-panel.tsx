@@ -3,6 +3,7 @@ import type { LeadRecord, PropertyRecord } from '@/lib/estateflow-types';
 import { getLeadWorkflowInsight } from '@/lib/workflow';
 import Link from 'next/link';
 import { ArrowRight, Target, Zap } from 'lucide-react';
+import TakeActionButton from '@/components/workflow/take-action-button';
 
 type Props = {
   lead: LeadRecord;
@@ -71,6 +72,10 @@ export function LeadWorkflowPanel({ lead, properties }: Props) {
             Create new lead
             <ArrowRight className="h-4 w-4" />
           </Link>
+
+        <TakeActionButton leadId={lead.id} actionId={insight.nextAction.id}>
+          Take recommended action
+        </TakeActionButton>
         </div>
       </Card>
     </section>

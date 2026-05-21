@@ -115,6 +115,10 @@ export async function POST(req: Request) {
         });
 
         await supabaseServer.from('leads').update({ assigned_agent_id: candidate.teamMemberId }).eq('id', lead.id);
+        await supabaseServer
+          .from('leads')
+          .update({ status: 'Contacted', last_contacted_at: new Date().toISOString() })
+          .eq('id', lead.id);
 
         await supabaseServer.from('calls').insert({
           organization_id: organizationId,

@@ -1,0 +1,6 @@
+C:\Projects\the-realest-project\src\app\api\cron\run-workflow\route.ts : @typescript-eslint/no-explicit-any
+C:\Projects\the-realest-project\src\app\api\cron\weekly-wins\route.ts : @typescript-eslint/no-explicit-any
+C:\Projects\the-realest-project\src\app\api\workflow\execute\route.ts : @typescript-eslint/no-explicit-any
+C:\Projects\the-realest-project\src\app\page.tsx : @typescript-eslint/no-unused-vars
+C:\Projects\the-realest-project\src\components\workflow\take-action-button.tsx : @typescript-eslint/no-explicit-any
+C:\Projects\the-realest-project\src\services\workflow-executor.ts : @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any,prefer-const

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
+import type { LeadRecord } from '@/lib/estateflow-types';
 import { computeLeaderboard } from '@/lib/leaderboard';
 import { sendEmail } from '@/services/emailService';
 
@@ -19,7 +20,7 @@ export async function POST() {
       const [{ data: leads }, { data: calls }, { data: teamRows }, { data: profileRows }] = await Promise.all([
         supabase
           .from('leads')
-          .select('id, assigned_agent_id, status, budget_max, created_at')
+          .select('*')
           .eq('organization_id', org.id),
         supabase.from('calls').select('lead_id, agent_id, started_at').eq('organization_id', org.id),
         supabase.from('team_members').select('id, profile_id').eq('organization_id', org.id).eq('is_active', true),
@@ -33,7 +34,7 @@ export async function POST() {
       }));
 
       const leaderboard = computeLeaderboard({
-        leads: (leads ?? []) as any,
+        leads: (leads ?? []) as LeadRecord[],
         calls: (calls ?? []) as Array<{ lead_id: string | null; agent_id: string | null; started_at: string | null }>,
         team,
       });

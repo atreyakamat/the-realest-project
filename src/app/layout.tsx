@@ -4,6 +4,7 @@ import "./globals.css";
 import { MobileNav } from "@/components/mobile-nav";
 import { LayoutDashboard, Users, Home, CalendarCheck, Menu } from "lucide-react";
 import { Toaster } from "sonner";
+import { RealtimeBootstrap } from "@/components/realtime-bootstrap";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,6 +64,7 @@ export default function RootLayout({
             </div>
           </aside>
         </div>
+        <RealtimeBootstrap />
         <Toaster position="top-center" theme="dark" />
       </body>
     </html>

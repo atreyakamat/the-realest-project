@@ -57,6 +57,8 @@ export type PropertyRecord = {
   title: string;
   location: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   property_type: string | null;
   price: number | null;
   size: string | null;

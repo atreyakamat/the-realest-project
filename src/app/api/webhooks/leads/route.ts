@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { assignLeadRoundRobin, getAvailableSalesAgentCandidates } from '@/services/leadAssignmentService';
 import { bridgeCall } from '@/services/callService';
+import { scheduleDefaultLeadDripSequence } from '@/services/dripCampaignService';
+import { sendPushToOrganization } from '@/services/pushService';
 
 const LeadPayload = z.object({
   fullName: z.string(),
@@ -83,7 +85,19 @@ export async function POST(req: Request) {
         type: 'lead_assigned',
         payload: { lead_id: lead.id, lead_name: lead.full_name }
       });
+
+      await sendPushToOrganization(organizationId, {
+        title: 'New lead assigned',
+        body: `${lead.full_name ?? 'A lead'} has been assigned and is ready for follow-up.`,
+        data: { leadId: lead.id, path: `/leads/${lead.id}` },
+      });
     }
+
+    await scheduleDefaultLeadDripSequence({
+      organizationId,
+      leadId: lead.id,
+      leadCreatedAt: lead.created_at,
+    });
 
     // Trigger call bridge automation with retry on available agents.
     const dryRun = process.env.DRY_RUN === '1' || process.env.NODE_ENV !== 'production';

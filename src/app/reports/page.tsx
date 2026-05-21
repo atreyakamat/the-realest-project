@@ -22,7 +22,13 @@ export default async function ReportsPage() {
         <Metric label="Inventory" value={reportData.metrics.availableInventory} />
       </Card>
 
-      <ReportsPanel sources={reportData.sources} statuses={reportData.statuses} won={reportData.won} lost={reportData.lost} />
+      <ReportsPanel
+        sources={reportData.sources}
+        statuses={reportData.statuses}
+        won={reportData.won}
+        lost={reportData.lost}
+        leaderboard={reportData.leaderboard}
+      />
     </div>
   );
 }

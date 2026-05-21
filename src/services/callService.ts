@@ -10,6 +10,7 @@ type BridgeCallOptions = {
 };
 
 export async function bridgeCall({
+  organizationId,
   agentPhone,
   leadPhone,
   leadId,
@@ -35,6 +36,10 @@ export async function bridgeCall({
   }
 
   const client = twilio(accountSid, authToken);
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const recordingCallback = `${appUrl}/api/webhooks/twilio/recording?organizationId=${encodeURIComponent(
+    organizationId,
+  )}&leadId=${encodeURIComponent(leadId ?? '')}`;
 
   try {
     const conferenceName = `conf_${leadId}_${Date.now()}`;
@@ -45,7 +50,11 @@ export async function bridgeCall({
       twiml: `<Response>
                 <Say>New EstateFlow lead from your CRM. Connecting you now.</Say>
                 <Dial>
-                  <Conference>${conferenceName}</Conference>
+                  <Conference
+                    record="record-from-start"
+                    recordingStatusCallback="${recordingCallback}"
+                    recordingStatusCallbackMethod="POST"
+                  >${conferenceName}</Conference>
                 </Dial>
               </Response>`
     });
@@ -55,7 +64,11 @@ export async function bridgeCall({
       from: twilioPhone,
       twiml: `<Response>
                 <Dial>
-                  <Conference>${conferenceName}</Conference>
+                  <Conference
+                    record="record-from-start"
+                    recordingStatusCallback="${recordingCallback}"
+                    recordingStatusCallbackMethod="POST"
+                  >${conferenceName}</Conference>
                 </Dial>
               </Response>`
     });

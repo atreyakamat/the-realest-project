@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from '../../lib/supabase-server';
 import { requireSessionUser } from '../../lib/auth';
 import { sendMessage } from '../../services/messageService';
 import { sendEmail } from '../../services/emailService';
+import { createCalendarEvent } from '../../services/googleCalendarService';
 
 const followupSchema = z.object({
   leadId: z.string().min(1),
@@ -26,6 +27,14 @@ export async function createFollowupAction(_prevState: { message: string; error:
   }
 
   const supabase = await createSupabaseServerClient();
+  
+  // Get lead info for calendar event
+  const { data: lead } = await supabase
+    .from('leads')
+    .select('full_name, email')
+    .eq('id', parsed.data.leadId)
+    .single();
+
   const { error } = await supabase.from('followups').insert({
     organization_id: user.organizationId,
     lead_id: parsed.data.leadId,
@@ -37,6 +46,23 @@ export async function createFollowupAction(_prevState: { message: string; error:
 
   if (error) {
     return { message: '', error: error.message };
+  }
+
+  // Create Google Calendar event
+  if (user.organizationId) {
+    const startTime = new Date(parsed.data.dueAt);
+    const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // Default 30 min
+
+    await createCalendarEvent({
+      organizationId: user.organizationId,
+      summary: `Follow-up: ${lead?.full_name || 'Lead'}`,
+      description: parsed.data.note,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      attendees: lead?.email ? [lead.email] : [],
+    }).catch(err => {
+      console.error('Failed to sync follow-up to Google Calendar:', err);
+    });
   }
 
   await supabase.from('notifications').insert({

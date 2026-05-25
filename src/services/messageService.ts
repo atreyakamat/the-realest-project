@@ -1,13 +1,28 @@
 import twilio from 'twilio';
+import { sendWhatsAppCloudApiMessage } from './whatsappCloudApiService';
 
 type SendMessageOptions = {
   to: string;
   body: string;
   channel: 'sms' | 'whatsapp';
+  organizationId?: string;
   dryRun?: boolean;
 };
 
-export async function sendMessage({ to, body, channel, dryRun }: SendMessageOptions) {
+export async function sendMessage({ to, body, channel, organizationId, dryRun }: SendMessageOptions) {
+  // If WhatsApp and organizationId is provided, try Cloud API first
+  if (channel === 'whatsapp' && organizationId) {
+    const cloudApiResult = await sendWhatsAppCloudApiMessage({
+      organizationId,
+      to,
+      text: body,
+    });
+
+    if (cloudApiResult.ok) {
+      return { sid: cloudApiResult.messageId, status: 'sent', provider: 'whatsapp_cloud_api' };
+    }
+  }
+
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromNumber = channel === 'whatsapp' 

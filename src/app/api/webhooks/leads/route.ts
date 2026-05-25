@@ -21,10 +21,38 @@ const LeadPayload = z.object({
   organizationId: z.string().optional()
 });
 
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const mode = url.searchParams.get('hub.mode');
+  const token = url.searchParams.get('hub.verify_token');
+  const challenge = url.searchParams.get('hub.challenge');
+
+  if (mode && token) {
+    if (mode === 'subscribe' && token === (process.env.META_VERIFY_TOKEN || 'estateflow_secret')) {
+      console.log('WEBHOOK_VERIFIED');
+      return new Response(challenge, { status: 200 });
+    }
+    return new Response(null, { status: 403 });
+  }
+  return new Response(null, { status: 400 });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const parsed = LeadPayload.parse(body);
+    
+    // Handle Meta Lead Ads payload structure
+    let parsedBody = body;
+    if (body.object === 'page' && body.entry?.[0]?.changes?.[0]?.value?.leadgen_id) {
+       // This is a Meta Lead Ads event. 
+       // In a real app, we'd fetch the lead data from Graph API here.
+       // For now, we'll map the basic info if it was passed in a simplified webhook, 
+       // or log it for processing.
+       console.log('Meta Lead Ads Event Received:', body.entry[0].changes[0].value.leadgen_id);
+       // We'll proceed with the normalized LeadPayload validation.
+    }
+
+    const parsed = LeadPayload.parse(parsedBody);
     const dryRun =
       process.env.DRY_RUN === '1' ||
       !process.env.SUPABASE_URL ||

@@ -7,7 +7,7 @@ type WhatsAppMessageOptions = {
   to: string;
   templateName?: string;
   languageCode?: string;
-  components?: any[];
+  components?: Array<Record<string, unknown>>;
   text?: string;
 };
 
@@ -34,7 +34,7 @@ export async function sendWhatsAppCloudApiMessage(options: WhatsAppMessageOption
 
   const url = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
   
-  const body: any = {
+  const body: Record<string, unknown> = {
     messaging_product: 'whatsapp',
     to: options.to.replace(/\D/g, ''), // Ensure only digits
   };

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { requireSessionUser } from '@/lib/auth';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const user = await requireSessionUser();
     if (!user.organizationId) {

@@ -50,14 +50,24 @@ export async function GET(request: NextRequest) {
     }
 
     const headers = ['ID', 'Lead ID', 'Created By', 'Due At', 'Note', 'Status', 'Created At'];
-    const rows = (followups as any[]).map((fu) => [
+    type FollowupRow = {
+      id?: string;
+      lead_id?: string;
+      created_by?: string;
+      due_at?: string;
+      note?: string;
+      status?: string;
+      created_at?: string;
+    };
+
+    const rows = (followups as FollowupRow[]).map((fu) => [
       fu.id,
       fu.lead_id || '',
       fu.created_by || '',
       fu.due_at ? new Date(fu.due_at).toLocaleString() : '',
       fu.note || '',
       fu.status || '',
-      new Date(fu.created_at).toLocaleString(),
+      fu.created_at ? new Date(fu.created_at).toLocaleString() : '',
     ]);
 
     const csv = [

@@ -52,15 +52,27 @@ export async function GET(request: NextRequest) {
     }
 
     const headers = ['ID', 'Lead ID', 'Agent ID', 'Call SID', 'Status', 'Duration', 'Recording URL', 'Started', 'Outcome'];
-    const rows = (calls as any[]).map((call) => [
+    type CallRow = {
+      id?: string;
+      lead_id?: string;
+      agent_id?: string;
+      call_sid?: string;
+      status?: string;
+      duration?: number | string;
+      recording_url?: string;
+      started_at?: string;
+      outcome?: string;
+    };
+
+    const rows = (calls as CallRow[]).map((call) => [
       call.id,
       call.lead_id || '',
       call.agent_id || '',
       call.call_sid || '',
       call.status || '',
-      call.duration || '0',
+      String(call.duration ?? '0'),
       call.recording_url || '',
-      new Date(call.started_at).toLocaleString(),
+      call.started_at ? new Date(call.started_at).toLocaleString() : '',
       call.outcome || '',
     ]);
 

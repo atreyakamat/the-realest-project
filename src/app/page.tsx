@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { Activity, Calendar, Flame, MapPin, Phone, Plus, Search, UserCheck, Users, Warehouse, Download } from 'lucide-react';
+import { Activity, Calendar, Flame, MapPin, Phone, Plus, Search, UserCheck, Users, Warehouse } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { getDashboardMetrics, getLeads, getProperties } from '@/lib/data';

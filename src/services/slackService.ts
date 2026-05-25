@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 type SlackMessageOptions = {
   organizationId: string;
   text: string;
-  blocks?: any[];
+  blocks?: Array<Record<string, unknown>>;
 };
 
 async function getSlackWebhookUrl(organizationId: string) {

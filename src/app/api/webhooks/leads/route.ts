@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     
     // Handle Meta Lead Ads payload structure
-    let parsedBody = body;
+     const parsedBody = body;
     if (body.object === 'page' && body.entry?.[0]?.changes?.[0]?.value?.leadgen_id) {
        // This is a Meta Lead Ads event. 
        // In a real app, we'd fetch the lead data from Graph API here.

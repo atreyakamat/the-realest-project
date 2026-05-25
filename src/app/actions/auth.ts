@@ -57,7 +57,6 @@ export async function inviteTeamMemberAction(_prevState: { message: string; erro
     return { message: '', error: 'Please fill in all invite fields.' };
   }
 
-  const supabase = await createSupabaseServerClient();
   const user = await getSessionUser();
 
   if (!isAdmin(user)) {

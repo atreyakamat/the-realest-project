@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createSupabaseServerClient } from '../../lib/supabase-server';
 import { requireSessionUser } from '../../lib/auth';
 import { sharePropertyWithLead } from '../../services/propertyShareService';
+import { syncLeadToGoogleSheets } from '@/services/googleSheetsSyncService';
 
 const leadSchema = z.object({
   fullName: z.string().min(2),
@@ -45,6 +46,23 @@ export async function createLeadAction(_prevState: { message: string; error: str
   if (error) {
     return { message: '', error: error.message };
   }
+
+  void syncLeadToGoogleSheets({
+    organizationId: user.organizationId ?? '',
+    leadId: crypto.randomUUID(),
+    leadName: parsed.data.fullName,
+    phone: parsed.data.phone,
+    email: parsed.data.email || null,
+    source: parsed.data.source ?? 'Manual',
+    status: 'New',
+    temperature: 'Warm',
+    preferredLocation: parsed.data.preferredLocation ?? null,
+    budgetMin: parsed.data.budgetMin ?? null,
+    budgetMax: parsed.data.budgetMax ?? null,
+    notes: parsed.data.notes ?? null,
+  }).catch((syncError) => {
+    console.error('Google Sheets sync failed:', syncError);
+  });
 
   revalidatePath('/leads');
   revalidatePath('/dashboard');

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { demoLeads } from '@/lib/fallback-data';
 
 /**
  * GET /api/export/leads?format=csv&dateFrom=2024-01-01&dateTo=2024-12-31
@@ -19,23 +20,38 @@ export async function GET(request: NextRequest) {
     const dateTo = request.nextUrl.searchParams.get('dateTo');
     const status = request.nextUrl.searchParams.get('status');
     const source = request.nextUrl.searchParams.get('source');
+    const useDemoData = process.env.NODE_ENV !== 'production';
 
     // Build query
-    let query = supabase
-      .from('leads')
-      .select('*')
-      .eq('organization_id', user.organizationId)
-      .order('created_at', { ascending: false });
+    let leads = demoLeads;
 
-    if (status) query = query.eq('status', status);
-    if (source) query = query.eq('source', source);
-    if (dateFrom) query = query.gte('created_at', dateFrom);
-    if (dateTo) query = query.lte('created_at', dateTo);
+    if (!useDemoData) {
+      let query = supabase
+        .from('leads')
+        .select('*')
+        .eq('organization_id', user.organizationId)
+        .order('created_at', { ascending: false });
 
-    const { data: leads, error } = await query;
+      if (status) query = query.eq('status', status);
+      if (source) query = query.eq('source', source);
+      if (dateFrom) query = query.gte('created_at', dateFrom);
+      if (dateTo) query = query.lte('created_at', dateTo);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      const { data, error } = await query;
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      leads = data ?? [];
+    } else {
+      leads = demoLeads.filter((lead) => {
+        if (status && lead.status !== status) return false;
+        if (source && lead.source !== source) return false;
+        if (dateFrom && new Date(lead.created_at) < new Date(dateFrom)) return false;
+        if (dateTo && new Date(lead.created_at) > new Date(dateTo)) return false;
+        return true;
+      });
     }
 
     if (format === 'json') {

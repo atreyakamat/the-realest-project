@@ -1,6 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Circle, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import type { PropertyRecord } from '@/lib/estateflow-types';
 
 type PropertyWithGeo = PropertyRecord & { mapLat: number; mapLng: number };
@@ -14,6 +17,16 @@ export default function PropertyMap({
   center: [number, number];
   radiusKm: number;
 }) {
+  useEffect(() => {
+    // Fix missing marker icons in Leaflet with Next.js
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+  }, []);
+
   return (
     <div className="h-[460px] overflow-hidden rounded-2xl border border-white/10">
       <MapContainer center={center} zoom={11} style={{ height: '100%', width: '100%' }}>

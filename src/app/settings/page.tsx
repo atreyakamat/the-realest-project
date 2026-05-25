@@ -2,9 +2,16 @@ import { Card, Badge } from '@/components/ui';
 import { SettingsForm } from '@/components/settings/settings-form';
 import { getSessionUser } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { isAdmin } from '@/lib/rbac';
+import { redirect } from 'next/navigation';
 
 export default async function SettingsPage() {
   const user = await getSessionUser();
+  
+  if (!isAdmin(user)) {
+    redirect('/');
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data: settings } = await supabase
     .from('integration_settings')

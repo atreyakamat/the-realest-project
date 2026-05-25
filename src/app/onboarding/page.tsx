@@ -2,6 +2,7 @@ import { getSessionUser } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard';
+import { OnboardingWorkflowGuide } from '@/components/onboarding/onboarding-workflow-guide';
 
 export default async function OnboardingPage() {
   const user = await getSessionUser();
@@ -26,6 +27,7 @@ export default async function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <OnboardingWorkflowGuide />
       <OnboardingWizard userId={user.id} email={user.email || ''} />
     </div>
   );

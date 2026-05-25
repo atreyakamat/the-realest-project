@@ -27,21 +27,42 @@ export async function GET(request: NextRequest) {
     const format = request.nextUrl.searchParams.get('format') || 'csv';
     const dateFrom = request.nextUrl.searchParams.get('dateFrom');
     const dateTo = request.nextUrl.searchParams.get('dateTo');
+    const useDemoData = process.env.NODE_ENV !== 'production';
 
-    let query = supabase
-      .from('attendance')
-      .select('*, profiles(full_name)')
-      .eq('organization_id', user.organizationId)
-      .order('check_in_time', { ascending: false });
+    const demoAttendance: AttendanceExportRecord[] = [
+      {
+        profiles: { full_name: 'Agent One' },
+        check_in_time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        check_out_time: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+        status: 'present',
+        notes: 'On site visit',
+      },
+    ];
 
-    if (dateFrom) query = query.gte('check_in_time', dateFrom);
-    if (dateTo) query = query.lte('check_in_time', dateTo);
+    let attendanceRecords = demoAttendance;
 
-    const { data: records, error } = await query;
-    const attendanceRecords = (records ?? []) as AttendanceExportRecord[];
+    if (!useDemoData) {
+      let query = supabase
+        .from('attendance')
+        .select('*, profiles(full_name)')
+        .eq('organization_id', user.organizationId)
+        .order('check_in_time', { ascending: false });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      if (dateFrom) query = query.gte('check_in_time', dateFrom);
+      if (dateTo) query = query.lte('check_in_time', dateTo);
+
+      const { data: records, error } = await query;
+      attendanceRecords = (records ?? []) as AttendanceExportRecord[];
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+    } else {
+      attendanceRecords = demoAttendance.filter((record) => {
+        if (dateFrom && new Date(record.check_in_time) < new Date(dateFrom)) return false;
+        if (dateTo && new Date(record.check_in_time) > new Date(dateTo)) return false;
+        return true;
+      });
     }
 
     if (format === 'json') {

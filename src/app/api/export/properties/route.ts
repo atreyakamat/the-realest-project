@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { demoProperties } from '@/lib/fallback-data';
 
 /**
  * GET /api/export/properties?format=csv
@@ -17,20 +18,33 @@ export async function GET(request: NextRequest) {
     const format = request.nextUrl.searchParams.get('format') || 'csv';
     const status = request.nextUrl.searchParams.get('status');
     const type = request.nextUrl.searchParams.get('type');
+    const useDemoData = process.env.NODE_ENV !== 'production';
 
-    let query = supabase
-      .from('properties')
-      .select('*')
-      .eq('organization_id', user.organizationId)
-      .order('created_at', { ascending: false });
+    let properties = demoProperties;
 
-    if (status) query = query.eq('availability_status', status);
-    if (type) query = query.eq('property_type', type);
+    if (!useDemoData) {
+      let query = supabase
+        .from('properties')
+        .select('*')
+        .eq('organization_id', user.organizationId)
+        .order('created_at', { ascending: false });
 
-    const { data: properties, error } = await query;
+      if (status) query = query.eq('availability_status', status);
+      if (type) query = query.eq('property_type', type);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      const { data, error } = await query;
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      properties = data ?? [];
+    } else {
+      properties = demoProperties.filter((property) => {
+        if (status && property.availability_status !== status) return false;
+        if (type && property.property_type !== type) return false;
+        return true;
+      });
     }
 
     if (format === 'json') {

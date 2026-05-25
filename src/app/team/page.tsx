@@ -1,7 +1,16 @@
 import { Card } from '@/components/ui';
 import { InviteTeamMemberForm } from '@/components/team/invite-team-member-form';
+import { getSessionUser } from '@/lib/auth';
+import { isAdmin } from '@/lib/rbac';
+import { redirect } from 'next/navigation';
 
-export default function TeamPage() {
+export default async function TeamPage() {
+  const user = await getSessionUser();
+
+  if (!isAdmin(user)) {
+    redirect('/');
+  }
+
   return (
     <div className="space-y-6">
       <header className="space-y-2">

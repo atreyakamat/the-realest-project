@@ -5,6 +5,7 @@ import { assignLeadRoundRobin, getAvailableSalesAgentCandidates } from '@/servic
 import { bridgeCall } from '@/services/callService';
 import { scheduleDefaultLeadDripSequence } from '@/services/dripCampaignService';
 import { sendPushToOrganization } from '@/services/pushService';
+import { syncLeadToGoogleSheets } from '@/services/googleSheetsSyncService';
 
 const LeadPayload = z.object({
   fullName: z.string(),
@@ -21,9 +22,47 @@ const LeadPayload = z.object({
 
 export async function POST(req: Request) {
   try {
-    const supabaseServer = await createSupabaseServerClient();
     const body = await req.json();
     const parsed = LeadPayload.parse(body);
+    const dryRun =
+      process.env.DRY_RUN === '1' ||
+      !process.env.SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_URL.includes('your_supabase');
+
+    if (dryRun) {
+      const leadId = `dry-${Date.now()}`;
+      const organizationId = parsed.organizationId ?? '00000000-0000-0000-0000-000000000001';
+
+      await bridgeCall({
+        organizationId,
+        agentPhone: '',
+        leadPhone: parsed.phone,
+        leadId,
+        dryRun: true,
+      });
+
+      await syncLeadToGoogleSheets({
+        organizationId,
+        leadId,
+        leadName: parsed.fullName,
+        phone: parsed.phone,
+        email: parsed.email ?? null,
+        source: parsed.source ?? null,
+        status: 'New',
+        temperature: 'Warm',
+        preferredLocation: parsed.preferredLocation ?? null,
+        budgetMin: parsed.budgetMin ?? null,
+        budgetMax: parsed.budgetMax ?? null,
+        notes: parsed.notes ?? null,
+      }).catch((syncError) => {
+        console.error('Google Sheets sync failed in dry run:', syncError);
+      });
+
+      return NextResponse.json({ ok: true, leadId, bridged: true, dryRun: true });
+    }
+
+    const supabaseServer = await createSupabaseServerClient();
 
     // Determine organization - default to first org for demo if not provided
     let organizationId: string = parsed.organizationId ?? '';
@@ -53,8 +92,45 @@ export async function POST(req: Request) {
 
     if (insertError) {
       console.error('Lead insert error', insertError);
+
+      if (dryRun || process.env.NODE_ENV !== 'production') {
+        const dryLeadId = `dry-${Date.now()}`;
+        await bridgeCall({
+          organizationId,
+          agentPhone: '',
+          leadPhone: parsed.phone,
+          leadId: dryLeadId,
+          dryRun: true,
+        });
+
+        return NextResponse.json({
+          ok: true,
+          leadId: dryLeadId,
+          bridged: true,
+          dryRun: true,
+          fallback: 'db_insert_failed',
+        });
+      }
+
       return NextResponse.json({ error: 'DB_INSERT_ERROR' }, { status: 500 });
     }
+
+    await syncLeadToGoogleSheets({
+      organizationId,
+      leadId: lead.id,
+      leadName: lead.full_name,
+      phone: lead.phone,
+      email: lead.email,
+      source: lead.source,
+      status: lead.status,
+      temperature: lead.temperature,
+      preferredLocation: lead.preferred_location,
+      budgetMin: lead.budget_min,
+      budgetMax: lead.budget_max,
+      notes: lead.notes,
+    }).catch((syncError) => {
+      console.error('Google Sheets sync failed for webhook lead:', syncError);
+    });
 
     // Assign agent using round-robin
     const assignRes = await assignLeadRoundRobin(organizationId);
@@ -100,7 +176,7 @@ export async function POST(req: Request) {
     });
 
     // Trigger call bridge automation with retry on available agents.
-    const dryRun = process.env.DRY_RUN === '1' || process.env.NODE_ENV !== 'production';
+    const callDryRun = dryRun || process.env.NODE_ENV !== 'production';
     let bridged = false;
 
     for (const candidate of orderedCandidates) {
@@ -111,7 +187,7 @@ export async function POST(req: Request) {
           leadPhone: parsed.phone,
           leadId: lead.id,
           agentId: candidate.teamMemberId,
-          dryRun,
+          dryRun: callDryRun,
         });
 
         await supabaseServer.from('leads').update({ assigned_agent_id: candidate.teamMemberId }).eq('id', lead.id);

@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '../../lib/supabase-server';
 import { createSupabaseAdminClient } from '../../lib/supabase-admin';
+import { getSessionUser } from '../../lib/auth';
+import { isAdmin } from '../../lib/rbac';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -56,10 +58,14 @@ export async function inviteTeamMemberAction(_prevState: { message: string; erro
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: authUser } = await supabase.auth.getUser();
-  const organizationId = authUser.user?.user_metadata?.organization_id ?? null;
-  const admin = createSupabaseAdminClient();
+  const user = await getSessionUser();
 
+  if (!isAdmin(user)) {
+    return { message: '', error: 'Only administrators can invite team members.' };
+  }
+
+  const organizationId = user?.organizationId ?? null;      
+  const admin = createSupabaseAdminClient();
   const { error } = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
     data: {
       full_name: parsed.data.fullName,

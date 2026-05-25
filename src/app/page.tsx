@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { Activity, Calendar, Flame, MapPin, Phone, Plus, Search, UserCheck, Users, Warehouse } from 'lucide-react';
+import { Activity, Calendar, Flame, MapPin, Phone, Plus, Search, UserCheck, Users, Warehouse, Download } from 'lucide-react';
 import { Card, Badge } from '@/components/ui';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { getDashboardMetrics, getLeads, getProperties } from '@/lib/data';
 import { getWorkflowQueue } from '@/lib/workflow';
+import { ExportButton } from '@/components/export-button';
 
 export default async function DashboardPage() {
   const orgId = null;
@@ -14,18 +15,25 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">EstateFlow</h1>
+          <h1 className="text-2xl font-bold text-white">EstateFlow</h1>
           <p className="text-sm text-slate-400">Welcome back, Sales Manager</p>
         </div>
-        <div className="flex gap-2">
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-slate-400">
-            <Search className="h-5 w-5" />
-          </button>
-          <Link href="/leads/new" className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-slate-950">
-            <Plus className="h-5 w-5" />
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0">
+            <ExportButton dataType="leads" />
+            <ExportButton dataType="calls" />
+            <ExportButton dataType="attendance" />
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-slate-400">
+              <Search className="h-5 w-5" />
+            </button>
+            <Link href="/leads/new" className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-slate-950">
+              <Plus className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </header>
 

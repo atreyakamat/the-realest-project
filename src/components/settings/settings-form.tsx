@@ -32,6 +32,17 @@ export function SettingsForm({ initialValues }: { initialValues: Record<string, 
         <Input name="twilio_phone_number" placeholder="Twilio phone number" defaultValue={initialValues.twilio_phone_number ?? ''} />
         <Input name="whatsapp_sender_number" placeholder="WhatsApp sender number" defaultValue={initialValues.whatsapp_sender_number ?? ''} />
         <Input name="resend_api_key" placeholder="Resend API key" defaultValue={initialValues.resend_api_key ?? ''} />
+        <Input name="google_calendar_client_id" placeholder="Google Calendar client ID" defaultValue={initialValues.google_calendar_client_id ?? ''} />
+        <Input name="google_calendar_client_secret" placeholder="Google Calendar client secret" defaultValue={initialValues.google_calendar_client_secret ?? ''} />
+        <Input name="google_sheets_spreadsheet_id" placeholder="Google Sheets spreadsheet ID" defaultValue={initialValues.google_sheets_spreadsheet_id ?? ''} />
+        <Input name="google_sheets_webhook_url" placeholder="Google Sheets webhook URL" defaultValue={initialValues.google_sheets_webhook_url ?? ''} />
+        <Input name="google_drive_folder_id" placeholder="Google Drive folder ID" defaultValue={initialValues.google_drive_folder_id ?? ''} />
+        <Input name="meta_lead_ads_app_id" placeholder="Meta Lead Ads app ID" defaultValue={initialValues.meta_lead_ads_app_id ?? ''} />
+        <Input name="meta_lead_ads_app_secret" placeholder="Meta Lead Ads app secret" defaultValue={initialValues.meta_lead_ads_app_secret ?? ''} />
+        <Input name="meta_lead_ads_access_token" placeholder="Meta Lead Ads access token" defaultValue={initialValues.meta_lead_ads_access_token ?? ''} />
+        <Input name="slack_webhook_url" placeholder="Slack webhook URL" defaultValue={initialValues.slack_webhook_url ?? ''} />
+        <Input name="zapier_webhook_url" placeholder="Zapier webhook URL" defaultValue={initialValues.zapier_webhook_url ?? ''} />
+        <Input name="make_webhook_url" placeholder="Make webhook URL" defaultValue={initialValues.make_webhook_url ?? ''} />
         <Input name="openai_api_key" placeholder="OpenAI-compatible API key" defaultValue={initialValues.openai_api_key ?? ''} />
         <Input name="smtp_host" placeholder="SMTP host" defaultValue={initialValues.smtp_host ?? ''} />
         <Input name="smtp_port" placeholder="SMTP port" defaultValue={initialValues.smtp_port ?? ''} />

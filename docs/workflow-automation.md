@@ -1,50 +1,44 @@
-# Workflow Automation
+# EstateFlow CRM: User Workflow Guide
 
-This document explains how workflow recommendations are persisted and how to enable automated execution.
+Maximizing lead conversion requires a tight, automated flow. Follow these workflows to dominate your local real estate market.
 
-What was added
+## Workflow 1: The "Speed-to-Lead" Call Bridge
+**Goal**: Contact a lead within 30 seconds of their inquiry.
 
-- DB migration: `db/migrations/002_workflow_actions.sql` — a table to persist recommended workflow actions and their execution status.
-- API endpoint: `POST /api/workflow/execute` — records an action in the DB. By default it performs a dry-run (does not send messages).
-- Client helper: `src/components/workflow/take-action-button.tsx` — a small client component to record a recommended action from the Lead view.
-- Server helper: `src/lib/workflow-actions.ts` — helper to insert records into the workflow_actions table.
+1. **Auto-Trigger**: A lead submits a form on Facebook.
+2. **Instant Bridge**: The system calls the assigned Sales Agent's phone immediately.
+3. **Connect**: The Agent answers, hears "Connecting to Rahul Sharma," and the lead's phone starts ringing.
+4. **Result**: You've caught the lead while they are still looking at your ad.
+5. **AI Follow-up**: After the call, check the **Lead Detail** page for an AI-generated summary and sentiment (e.g., "Lead is interested but budget is tight").
 
-Dry-run by default
+## Workflow 2: Geographic Inventory Sharing
+**Goal**: Send relevant properties in under 60 seconds.
 
-For safety, the API and client record actions in `dry_run: true` by default. This means no external messages or calls are performed unless you wire a separate executor.
+1. **Discovery**: A lead mentions they want a flat near "Golf Course Road."
+2. **Map View**: Go to **Properties** → **Map View**.
+3. **Filter**: Move the map center to the location and adjust the **Radius** to 5km.
+4. **One-Click Share**: Enter the lead's WhatsApp number and click **"Send X in radius"**.
+5. **Impact**: The lead receives a curated list of properties with photos and public share links instantly.
 
-How to enable live channels
+## Workflow 3: Automated WhatsApp "Drip" Persistence
+**Goal**: Never let a lead go cold.
 
-To enable live sends (SMS/WhatsApp/Voice via Twilio, or Email via Resend), implement a background worker or an edge function that polls `workflow_actions` for records with `status = 'pending'` and `dry_run = false`.
+1. **New Lead**: Every lead starts a "Drip Sequence" automatically.
+2. **Touch 1 (2 hours)**: If you haven't marked them as "Interested," the CRM sends an automated WhatsApp intro.
+3. **Touch 2 (Day 3)**: A value-add message is sent.
+4. **Touch 3 (Day 7)**: A final check-in is sent.
+5. **Manual Override**: The second you call or update the lead status to "Interested," the automation pauses so you can take over personally.
 
-Recommended environment variables
+## Workflow 4: Field Performance & Attendance
+**Goal**: Transparent field operations.
 
-- TWILIO_ACCOUNT_SID
-- TWILIO_AUTH_TOKEN
-- TWILIO_PHONE_NUMBER
-- RESEND_API_KEY
+1. **Check-in**: Field executives click "Check-in" upon reaching a property site. The CRM logs their GPS.
+2. **Site Visit Notes**: They add photos and notes directly to the lead timeline while on-site.
+3. **Leaderboard**: Sales Managers review the **Leaderboard** to see who has the fastest response times and most site visits.
 
-How to run scheduled execution
+## Workflow 5: Social Media Synergy
+**Goal**: Keep your inventory visible.
 
-Create a cron job or GitHub Actions workflow that calls `/api/cron/run-workflow` (or implement a Supabase scheduled function) to pick up pending actions and execute them. The project now includes a small executor service that will process pending, non-dry-run actions and attempt execution using configured channels (Twilio / Resend / Email). The executor will:
-
-- Fetch pending workflow_actions (status = 'pending' and dry_run = false)
-- Execute supported actions (call_now, send_matches, book_visit, manager_review, nurture)
-- Mark actions as `executed` or `failed` with result metadata (stored in `workflow_actions.result`)
-
-Run the executor by POSTing to `/api/cron/run-workflow`.
-
-Environment variables required for live execution
-
-- TWILIO_ACCOUNT_SID
-- TWILIO_AUTH_TOKEN
-- TWILIO_PHONE_NUMBER
-- RESEND_API_KEY (if using Resend email)
-- MANAGER_EMAIL (for manager_review notifications)
-
-Security
-
-Protect the execution endpoint with authentication and only allow authorized service accounts to flip `dry_run` to `false`.
-
-Note: In absence of these credentials, the executor will fail-safe and record an error in the action result. Always test in a staging environment first.
-
+1. **Content Draft**: Social Media Managers draft posts for new luxury villas.
+2. **Review**: Admins approve the "Scheduled" posts in the **Content Calendar**.
+3. **Engagement**: Leads coming from these posts are tagged with source "Instagram" and handled via Workflow 1.

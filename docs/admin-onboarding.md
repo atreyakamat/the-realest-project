@@ -172,7 +172,31 @@ The server will process the recording, call OpenAI (if `OPENAI_API_KEY` is set),
 - Generate and set VAPID keys for push.
 - Verify email sending by using Resend API with a test email.
 
-## 10) Contact & Notes
+## 10) Docker Desktop Runbook
+
+If Docker Desktop is already installed, you can run the app as a containerized service.
+
+Build the image:
+
+```bash
+docker build -t the-realest-project .
+```
+
+Run with Docker Compose (recommended):
+
+```bash
+docker compose up --build
+```
+
+Or run the container directly:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env.local the-realest-project
+```
+
+The compose file expects `.env.local` at the repo root. Put your Supabase, Twilio, OpenAI, Resend, and VAPID values there before starting the container.
+
+## 11) Contact & Notes
 If you want, I can:
 - Produce a runnable script to apply the migration using `psql` or the Supabase CLI.
 - Create a small test harness to simulate Twilio webhooks and validate DB inserts automatically.

@@ -5,6 +5,7 @@ import { assignLeadRoundRobin, getAvailableSalesAgentCandidates } from '@/servic
 import { bridgeCall } from '@/services/callService';
 import { scheduleDefaultLeadDripSequence } from '@/services/dripCampaignService';
 import { sendPushToOrganization } from '@/services/pushService';
+import { notifyNewLeadAssigned } from '@/services/slackService';
 import { syncLeadToGoogleSheets } from '@/services/googleSheetsSyncService';
 
 const LeadPayload = z.object({
@@ -166,6 +167,14 @@ export async function POST(req: Request) {
         title: 'New lead assigned',
         body: `${lead.full_name ?? 'A lead'} has been assigned and is ready for follow-up.`,
         data: { leadId: lead.id, path: `/leads/${lead.id}` },
+      });
+
+      await notifyNewLeadAssigned(organizationId, {
+        id: lead.id,
+        full_name: lead.full_name,
+        source: lead.source,
+      }).catch((slackError) => {
+        console.error('Slack notification failed for webhook lead:', slackError);
       });
     }
 

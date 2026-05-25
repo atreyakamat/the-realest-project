@@ -10,6 +10,7 @@ RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 FROM base AS runner

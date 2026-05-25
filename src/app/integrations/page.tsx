@@ -27,9 +27,9 @@ const integrationGroups = [
     title: 'Operations and automation',
     items: [
       { name: 'Google Calendar', status: 'Planned', detail: 'Sync site visits, team meetings, and follow-up reminders.' },
-      { name: 'Google Sheets', status: 'Ready', detail: 'Push lead lists into a webhook-backed Sheets workflow or Apps Script endpoint.' },
+      { name: 'Google Sheets', status: 'Ready', detail: 'Automated OAuth sync for leads. Click the link below to connect.' },
       { name: 'Google Drive', status: 'Planned', detail: 'Store brochures, plans, and shareable documents.' },
-      { name: 'Slack', status: 'Planned', detail: 'Post alerts for new leads, missed calls, and follow-ups.' },
+      { name: 'Slack', status: 'Ready', detail: 'Real-time alerts for new leads, missed calls, and follow-ups.' },
       { name: 'Zapier / Make', status: 'Ready', detail: 'Connect this CRM to downstream sales, marketing, or reporting tools.' },
       { name: 'OpenAI', status: 'Optional', detail: 'Draft captions, summaries, and lead follow-up suggestions.' },
     ],
@@ -71,6 +71,11 @@ export default function IntegrationsPage() {
                     <Badge>{integration.status}</Badge>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-300">{integration.detail}</p>
+                  {integration.name === 'Google Sheets' && (
+                    <Link href="/api/integrations/google/auth" className="mt-2 inline-block text-xs font-bold text-emerald-400">
+                      Connect Google OAuth →
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>

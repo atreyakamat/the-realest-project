@@ -113,6 +113,9 @@ export function OnboardingWorkflowGuide() {
               <Link href="/integrations" className="inline-flex rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950">
                 Review integrations
               </Link>
+              <Link href="/web" className="inline-flex rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
+                Open web version
+              </Link>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { CheckCircle2, Printer, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, ArrowLeft } from 'lucide-react';
+import { PrintChecklistButton } from '@/components/onboarding/print-checklist-button';
 
 const checklistSections = [
   {
@@ -40,10 +41,7 @@ export default function OnboardingChecklistPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to onboarding
         </Link>
-        <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-950">
-          <Printer className="h-4 w-4" />
-          Print checklist
-        </button>
+        <PrintChecklistButton />
       </div>
 
       <div className="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 shadow-2xl shadow-black/20 print:border-black print:bg-white print:p-0">

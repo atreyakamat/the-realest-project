@@ -28,7 +28,7 @@ export async function createLeadAction(_prevState: { message: string; error: str
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from('leads').insert({
+  const { data: insertedLead, error } = await supabase.from('leads').insert({
     organization_id: user.organizationId,
     full_name: parsed.data.fullName,
     phone: parsed.data.phone,
@@ -41,7 +41,7 @@ export async function createLeadAction(_prevState: { message: string; error: str
     notes: parsed.data.notes ?? null,
     status: 'New',
     temperature: 'Warm',
-  });
+  }).select('id, full_name, phone, email, source, status, temperature, preferred_location, budget_min, budget_max, notes').single();
 
   if (error) {
     return { message: '', error: error.message };
@@ -49,17 +49,17 @@ export async function createLeadAction(_prevState: { message: string; error: str
 
   void syncLeadToGoogleSheets({
     organizationId: user.organizationId ?? '',
-    leadId: crypto.randomUUID(),
-    leadName: parsed.data.fullName,
-    phone: parsed.data.phone,
-    email: parsed.data.email || null,
-    source: parsed.data.source ?? 'Manual',
-    status: 'New',
-    temperature: 'Warm',
-    preferredLocation: parsed.data.preferredLocation ?? null,
-    budgetMin: parsed.data.budgetMin ?? null,
-    budgetMax: parsed.data.budgetMax ?? null,
-    notes: parsed.data.notes ?? null,
+    leadId: insertedLead?.id ?? crypto.randomUUID(),
+    leadName: insertedLead?.full_name ?? parsed.data.fullName,
+    phone: insertedLead?.phone ?? parsed.data.phone,
+    email: insertedLead?.email ?? parsed.data.email ?? null,
+    source: insertedLead?.source ?? parsed.data.source ?? 'Manual',
+    status: insertedLead?.status ?? 'New',
+    temperature: insertedLead?.temperature ?? 'Warm',
+    preferredLocation: insertedLead?.preferred_location ?? parsed.data.preferredLocation ?? null,
+    budgetMin: insertedLead?.budget_min ?? parsed.data.budgetMin ?? null,
+    budgetMax: insertedLead?.budget_max ?? parsed.data.budgetMax ?? null,
+    notes: insertedLead?.notes ?? parsed.data.notes ?? null,
   }).catch((syncError) => {
     console.error('Google Sheets sync failed:', syncError);
   });
